@@ -287,6 +287,10 @@
                                 "password": {
                                     "type": "string",
                                     "description": "Password (must contain more than 4 words)"
+                                },
+                                "studentId": {
+                                    "type": "string",
+                                    "description": "Optional student ID"
                                 }
                             }
                         }
@@ -677,6 +681,9 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "studentId": {
+                    "type": "string"
                 }
             }
         },
