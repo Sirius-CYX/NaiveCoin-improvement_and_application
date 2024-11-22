@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出勤信息记录</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>出勤信息记录</h1>
+    <table id="attendanceTable">
+        <thead>
+            <tr>
+                <th>学生 ID</th>
+                <th>事件 ID</th>
+                <th>时间戳</th>
+                <th>签名</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 这里将来可以填入数据 -->
+        </tbody>
+    </table>
+
+    <script>
+        // 定义获取数据的函数
+        async function fetchAttendanceData() {
+            try {
+                const response = await fetch('/blockchain/signin-info');
+                const data = await response.json(); // 解析 JSON 数据
+
+                // 获取表格的 tbody 元素
+                const tableBody = document.querySelector('#attendanceTable tbody');
+                
+                // 清空表格内容
+                tableBody.innerHTML = '';
+
+                // 遍历数据并填入表格
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+
+                    // 创建并填充单元格
+                    const studentIdCell = document.createElement('td');
+                    studentIdCell.textContent = item.studentId;
+                    row.appendChild(studentIdCell);
+
+                    const eventIdCell = document.createElement('td');
+                    eventIdCell.textContent = item.blockIndex; // 这里使用 blockIndex 作为事件 ID
+                    row.appendChild(eventIdCell);
+
+                    const timestampCell = document.createElement('td');
+                    timestampCell.textContent = item.realWorldTime;
+                    row.appendChild(timestampCell);
+
+                    const signatureCell = document.createElement('td');
+                    signatureCell.textContent = item.address; // 这里使用 address 作为签名
+                    row.appendChild(signatureCell);
+
+                    // 将行添加到表格中
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('获取数据时出错:', error);
+            }
+        }
+
+        // 页面加载时获取数据
+        window.onload = fetchAttendanceData;
+    </script>
+</body>
+</html>
