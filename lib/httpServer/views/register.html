@@ -3,27 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>创建钱包</title>
+    <title>钱包管理</title>
 </head>
 <body>
-    <h1>创建新钱包</h1>
-    <form id="walletForm">
-        <label for="password">密码（超过4个单词）：</label>
-        <input type="password" id="password" name="password" required><br><br>
-        
-        <label for="studentId">学生ID（可选）：</label>
-        <input type="text" id="studentId" name="studentId"><br><br>
-        
-        <button type="submit">创建钱包</button>
-    </form>
+    <h1>钱包管理</h1>
+    
+    <div id="createWallet">
+        <h2>创建新钱包</h2>
+        <form id="walletForm">
+            <label for="password">密码（超过4个单词）：</label>
+            <input type="password" id="password" name="password" required><br><br>
+            
+            <label for="studentId">学生ID（可选）：</label>
+            <input type="text" id="studentId" name="studentId"><br><br>
+            
+            <button type="submit">创建钱包</button>
+        </form>
+    </div>
+
+    <div id="walletInfo" style="display: none;">
+        <h2>钱包信息</h2>
+        <p>钱包ID: <span id="walletId"></span></p>
+        <button id="generateAddress">生成新地址</button>
+        <p id="newAddress"></p>
+    </div>
 
     <div id="result"></div>
 
     <script>
+        let currentWalletId = '';
+        let currentPassword = '';
+
         document.getElementById('walletForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const password = document.getElementById('password').value;
+            currentPassword = document.getElementById('password').value;
             const studentId = document.getElementById('studentId').value;
 
             fetch('/operator/wallets', {
@@ -31,11 +45,32 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ password, studentId }),
+                body: JSON.stringify({ password: currentPassword, studentId }),
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('result').innerHTML = `钱包创建成功！钱包ID：${data.id}`;
+                currentWalletId = data.id;
+                document.getElementById('walletId').textContent = currentWalletId;
+                document.getElementById('createWallet').style.display = 'none';
+                document.getElementById('walletInfo').style.display = 'block';
+                document.getElementById('result').innerHTML = `钱包创建成功！`;
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = `错误：${error.message}`;
+            });
+        });
+
+        document.getElementById('generateAddress').addEventListener('click', function() {
+            fetch(`/operator/wallets/${currentWalletId}/addresses`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'password': currentPassword
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('newAddress').textContent = `新地址: ${data.address}`;
             })
             .catch(error => {
                 document.getElementById('result').innerHTML = `错误：${error.message}`;
