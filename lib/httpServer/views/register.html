@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>钱包管理</title>
+    <title>钱包管理和挖矿</title>
 </head>
 <body>
-    <h1>钱包管理</h1>
+    <h1>钱包管理和挖矿</h1>
     
     <div id="createWallet">
         <h2>创建新钱包</h2>
@@ -26,6 +26,7 @@
         <p>钱包ID: <span id="walletId"></span></p>
         <button id="generateAddress">生成新地址</button>
         <p id="newAddress"></p>
+        <button id="mineButton" disabled>开始挖矿</button>
     </div>
 
     <div id="result"></div>
@@ -33,6 +34,7 @@
     <script>
         let currentWalletId = '';
         let currentPassword = '';
+        let currentAddress = '';
 
         document.getElementById('walletForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -70,10 +72,29 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('newAddress').textContent = `新地址: ${data.address}`;
+                currentAddress = data.address;
+                document.getElementById('newAddress').textContent = `新地址: ${currentAddress}`;
+                document.getElementById('mineButton').disabled = false;
             })
             .catch(error => {
                 document.getElementById('result').innerHTML = `错误：${error.message}`;
+            });
+        });
+
+        document.getElementById('mineButton').addEventListener('click', function() {
+            fetch('/miner/mine', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ rewardAddress: currentAddress })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = `挖矿成功！新区块已添加。`;
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = `挖矿错误：${error.message}`;
             });
         });
     </script>
