@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>钱包管理和挖矿</title>
+    <title>钱包管理、挖矿和转账</title>
 </head>
 <body>
-    <h1>钱包管理和挖矿</h1>
+    <h1>钱包管理、挖矿和转账</h1>
     
     <div id="createWallet">
         <h2>创建新钱包</h2>
@@ -27,6 +27,17 @@
         <button id="generateAddress">生成新地址</button>
         <p id="newAddress"></p>
         <button id="mineButton" disabled>开始挖矿</button>
+
+        <h3>转账</h3>
+        <form id="transferForm">
+            <label for="toAddress">接收地址：</label>
+            <input type="text" id="toAddress" required><br><br>
+            
+            <label for="amount">转账金额：</label>
+            <input type="number" id="amount" required><br><br>
+            
+            <button type="submit" id="transferButton" disabled>转账</button>
+        </form>
     </div>
 
     <div id="result"></div>
@@ -75,6 +86,7 @@
                 currentAddress = data.address;
                 document.getElementById('newAddress').textContent = `新地址: ${currentAddress}`;
                 document.getElementById('mineButton').disabled = false;
+                document.getElementById('transferButton').disabled = false;
             })
             .catch(error => {
                 document.getElementById('result').innerHTML = `错误：${error.message}`;
@@ -95,6 +107,34 @@
             })
             .catch(error => {
                 document.getElementById('result').innerHTML = `挖矿错误：${error.message}`;
+            });
+        });
+
+        document.getElementById('transferForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const toAddress = document.getElementById('toAddress').value;
+            const amount = document.getElementById('amount').value;
+
+            fetch(`/operator/wallets/${currentWalletId}/transactions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'password': currentPassword
+                },
+                body: JSON.stringify({
+                    fromAddress: currentAddress,
+                    toAddress: toAddress,
+                    amount: parseFloat(amount),
+                    changeAddress: currentAddress
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = `转账成功！交易已创建。`;
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = `转账错误：${error.message}`;
             });
         });
     </script>
