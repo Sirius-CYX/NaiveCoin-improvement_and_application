@@ -17,17 +17,43 @@
         th {
             background-color: #f2f2f2;
         }
+        .search-container {
+            display: flex; /* 使用 Flexbox 布局 */
+            justify-content: space-between; /* 在两端对齐 */
+            margin-bottom: 20px; /* 添加底部间距 */
+        }
+        .search-container div {
+            display: flex; /* 使内部元素在一行显示 */
+            align-items: center; /* 垂直居中对齐 */
+        }
     </style>
 </head>
 <body>
-    <h1>出勤信息记录</h1>
+    <h1>Attendance information record</h1>
+    
+    <!-- 添加学生 ID 搜索框和按钮 -->
+    <div class="search-container">
+        <div>
+            <label for="searchInput">Search student ID:</label>
+            <input type="text" id="searchInput" placeholder="Enter Student ID">
+            <button onclick="searchStudent()">Search</button>
+        </div>
+        
+        <!-- 时间搜索 -->
+        <div>
+            <label for="searchTimeInput">Search time:</label>
+            <input type="text" id="searchTimeInput" placeholder="Enter time">
+            <button onclick="searchTime()">Search</button>
+        </div>
+    </div>
+    
     <table id="attendanceTable">
         <thead>
             <tr>
-                <th>学生 ID</th>
-                <th>事件 ID</th>
-                <th>时间戳</th>
-                <th>签名</th>
+                <th>Student ID</th>
+                <th>Event ID</th>
+                <th>realtime</th>
+                <th>address</th>
             </tr>
         </thead>
         <tbody>
@@ -36,45 +62,62 @@
     </table>
 
     <script>
+        let allData = []; // 用于存储所有获取的数据
+
         // 定义获取数据的函数
         async function fetchAttendanceData() {
             try {
                 const response = await fetch('/blockchain/signin-info');
                 const data = await response.json(); // 解析 JSON 数据
+                allData = data; // 将获取的数据存入 allData
 
-                // 获取表格的 tbody 元素
-                const tableBody = document.querySelector('#attendanceTable tbody');
-                
-                // 清空表格内容
-                tableBody.innerHTML = '';
-
-                // 遍历数据并填入表格
-                data.forEach(item => {
-                    const row = document.createElement('tr');
-
-                    // 创建并填充单元格
-                    const studentIdCell = document.createElement('td');
-                    studentIdCell.textContent = item.studentId;
-                    row.appendChild(studentIdCell);
-
-                    const eventIdCell = document.createElement('td');
-                    eventIdCell.textContent = item.blockIndex; // 这里使用 blockIndex 作为事件 ID
-                    row.appendChild(eventIdCell);
-
-                    const timestampCell = document.createElement('td');
-                    timestampCell.textContent = item.realWorldTime;
-                    row.appendChild(timestampCell);
-
-                    const signatureCell = document.createElement('td');
-                    signatureCell.textContent = item.address; // 这里使用 address 作为签名
-                    row.appendChild(signatureCell);
-
-                    // 将行添加到表格中
-                    tableBody.appendChild(row);
-                });
+                // 填充表格
+                populateTable(data);
             } catch (error) {
                 console.error('获取数据时出错:', error);
             }
+        }
+
+        // 定义填充表格的函数
+        function populateTable(data) {
+            const tableBody = document.querySelector('#attendanceTable tbody');
+            tableBody.innerHTML = ''; // 清空表格内容
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+
+                const studentIdCell = document.createElement('td');
+                studentIdCell.textContent = item.studentId;
+                row.appendChild(studentIdCell);
+
+                const eventIdCell = document.createElement('td');
+                eventIdCell.textContent = item.blockIndex; // 这里使用 blockIndex 作为事件 ID
+                row.appendChild(eventIdCell);
+
+                const timestampCell = document.createElement('td');
+                timestampCell.textContent = item.realWorldTime;
+                row.appendChild(timestampCell);
+
+                const signatureCell = document.createElement('td');
+                signatureCell.textContent = item.address; // 这里使用 address 作为签名
+                row.appendChild(signatureCell);
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // 定义搜索学生 ID 的函数
+        function searchStudent() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase(); // 获取搜索框的输入
+            const filteredData = allData.filter(item => item.studentId.toLowerCase().includes(searchInput)); // 过滤数据
+            populateTable(filteredData); // 用过滤后的数据填充表格
+        }
+
+        // 定义搜索时间的函数
+        function searchTime() {
+            const searchTimeInput = document.getElementById('searchTimeInput').value.toLowerCase(); // 获取时间搜索框的输入
+            const filteredData = allData.filter(item => item.realWorldTime.toLowerCase().includes(searchTimeInput)); // 过滤数据
+            populateTable(filteredData); // 用过滤后的数据填充表格
         }
 
         // 页面加载时获取数据
